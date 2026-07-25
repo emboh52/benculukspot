@@ -334,17 +334,7 @@ const handleDeletePlace = async (id: string) => {
             <span>Cluring, Banyuwangi</span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (!admin.isLoggedIn) setActiveTab('login');
-                else setActiveTab('admin');
-              }}
-              className="hover:text-emerald-700 font-medium transition-colors"
-            >
-              Portal Admin
-            </button>
-          </div>
+          
         </div>
       </footer>
 
