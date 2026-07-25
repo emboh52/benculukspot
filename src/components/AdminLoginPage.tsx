@@ -16,7 +16,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Sesuaikan kredensial rahasia Anda di sini
-    if (email === 'rudi52' && password === 'Kopok523') {
+    if (email === 'rudi52@gmail.com' && password === 'Kopok523') {
       onLoginSuccess(email);
     } else {
       setError('Email atau kata sandi salah!');
