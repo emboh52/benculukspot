@@ -1,0 +1,6 @@
+{
+  "name": "Direktori Tempat Benculuk",
+  "description": "Aplikasi web direktori tempat kuliner dan wisata interaktif dengan peta, filter pencarian, dan dashboard admin CRUD.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
