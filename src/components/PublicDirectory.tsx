@@ -63,7 +63,7 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Hero Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-800 via-teal-700 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-emerald-400/10 blur-3xl rounded-full" />
 
         <div className="relative z-10 max-w-2xl space-y-3">
@@ -76,7 +76,7 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
             Temukan Pusat Kuliner & Fasilitas Terbaik
           </h2>
 
-          <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
+          <p className="text-xs sm:text-sm font-bold text-emerald-900 leading-relaxed">
             Menjelajahi keindahan De Djawatan Forest - Banyuwangi rasanya kurang lengkap tanpa menikmati sajian kuliner khas dan menemukan tempat beristirahat yang nyaman di sekitarnya. 
             Berikut adalah kurasi tempat makan lezat dan akomodasi pilihan yang siap menyempurnakan petualanganmu
           </p>
