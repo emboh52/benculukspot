@@ -56,6 +56,14 @@ useEffect(() => {
   }
   return () => window.removeEventListener('hashchange', handleHashChange);
 }, []);
+const [darkMode, setDarkMode] = useState<boolean>(() => {
+  return localStorage.getItem('benculuk_darkmode') === 'true';
+});
+
+useEffect(() => {
+  document.documentElement.classList.toggle('dark', darkMode);
+  localStorage.setItem('benculuk_darkmode', String(darkMode));
+}, [darkMode]);
 
   // Admin Auth State
   const [admin, setAdmin] = useState<AdminUser>(() => {
@@ -76,6 +84,7 @@ useEffect(() => {
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
 
   // Save Places to LocalStorage
   useEffect(() => {
@@ -242,9 +251,7 @@ const handleDeletePlace = async (id: string) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
-      {/* Toast Notification Floating Alert */}
-      <AnimatePresence>
+<div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] transition-colors">      <AnimatePresence>
         {toastMessage && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
@@ -260,6 +267,7 @@ const handleDeletePlace = async (id: string) => {
       </AnimatePresence>
 
       {/* Navbar */}
+
       <Navbar
         admin={admin}
         activeTab={activeTab}
@@ -268,6 +276,8 @@ const handleDeletePlace = async (id: string) => {
         onResetData={handleResetData}
         totalPlaces={places.length}
         totalCategories={new Set(places.map((p) => p.kategori)).size}
+        darkMode={darkMode}
+        onToggleDarkMode={() => setDarkMode(!darkMode)}
       />
 
       {/* Main View Area */}
@@ -280,15 +290,15 @@ const handleDeletePlace = async (id: string) => {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
-            {activeTab === 'public' && (
-              <PublicDirectory
-                places={places}
-                selectedPlace={selectedPlace}
-                onSelectPlace={handleSelectPlace}
-                userLocation={userLocation}
-                onRequestUserLocation={handleRequestUserLocation}
-              />
-            )}
+           {activeTab === 'public' && (
+  <PublicDirectory
+    places={places}
+    selectedPlace={selectedPlace}
+    onSelectPlace={handleSelectPlace}
+    userLocation={userLocation}
+    onRequestUserLocation={handleRequestUserLocation}
+  />
+)}
 
             {activeTab === 'login' && (
               <AdminLoginPage

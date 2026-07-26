@@ -1,9 +1,15 @@
+import { FeaturedSpots } from './FeaturedSpots';
 import React, { useState } from 'react';
 import { Place, ViewMode } from '../types';
 import { PlaceCard } from './PlaceCard';
 import { InteractiveMap } from './InteractiveMap';
-import { getCategoryBadgeStyle } from '../utils/geo';
+const CATEGORY_GROUPS: Record<string, string[]> = {
+  Kuliner: ['Warung', 'Sego Tempong', 'Rujak Soto', 'Sate'],
+  Penginapan: ['Homestay'],
+  'Fasilitas Umum': ['Toko', 'Tempat Ibadah', 'Wisata'],
+};
 import {
+   
   Search,
   MapPin,
   Compass,
@@ -38,7 +44,6 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>('split');
 
   // Categories extraction
-  const categories: string[] = ['Semua', ...(Array.from(new Set(places.map((p) => p.kategori))) as string[])];
 
   // Filtering & Sorting
   const filteredPlaces = places
@@ -49,8 +54,9 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
         p.kategori.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.deskripsi.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesCat = selectedCategory === 'Semua' || p.kategori === selectedCategory;
-
+const matchesCat =
+        selectedCategory === 'Semua' ||
+        CATEGORY_GROUPS[selectedCategory]?.includes(p.kategori);
       return matchesSearch && matchesCat;
     })
     .sort((a, b) => {
@@ -96,8 +102,9 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
           </div>
         </div>
       </div>
+<FeaturedSpots places={places} onSelectPlace={onSelectPlace} />
 
-      {/* Search & Filter Controls */}
+    {/* Search & Filter Controls */}
       <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm space-y-3">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           {/* Search Bar */}
@@ -113,6 +120,18 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
           </div>
 
           <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+            {/* Category Dropdown Filter */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="Semua">Semua Kategori</option>
+              <option value="Kuliner">Kuliner</option>
+              <option value="Penginapan">Penginapan</option>
+              <option value="Fasilitas Umum">Fasilitas Umum</option>
+            </select>
+
             {/* Sort Option */}
             <select
               value={sortBy}
@@ -158,29 +177,7 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar scroll-smooth">
-          {categories.map((cat) => {
-            const isSelected = selectedCategory === cat;
-            const badgeStyle = getCategoryBadgeStyle(cat);
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
-                  isSelected
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
       </div>
-
       {/* Directory Layout Area */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Map Container Column */}
@@ -189,16 +186,18 @@ export const PublicDirectory: React.FC<PublicDirectoryProps> = ({
             viewMode === 'list'
               ? 'hidden'
               : viewMode === 'map'
-              ? 'lg:col-span-12 h-[650px]'
-              : 'lg:col-span-7 h-[550px] lg:h-[650px]'
+              ? 'lg:col-span-12 h-[450px]'
+              : 'lg:col-span-7 h-[400px] lg:h-[450px]'
           } lg:sticky lg:top-20 transition-all duration-300`}
         >
-          <InteractiveMap
-            places={filteredPlaces}
-            selectedPlace={selectedPlace}
-            onSelectPlace={onSelectPlace}
-            userLocation={userLocation}
-          />
+          <div className="w-full h-full rounded-3xl border-4 border-blue shadow-lg overflow-hidden ring-1 ring-slate-200">
+            <InteractiveMap
+              places={filteredPlaces}
+              selectedPlace={selectedPlace}
+              onSelectPlace={onSelectPlace}
+              userLocation={userLocation}
+            />
+          </div>
         </div>
 
         {/* List Cards Column */}

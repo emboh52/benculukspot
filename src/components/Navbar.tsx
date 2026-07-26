@@ -11,6 +11,8 @@ import {
   Store,
   Compass,
   Sparkles,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -21,6 +23,8 @@ interface NavbarProps {
   onResetData: () => void;
   totalPlaces: number;
   totalCategories: number;
+  darkMode: boolean;           // ← tambahkan
+  onToggleDarkMode: () => void; // ← tambahkan
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -31,6 +35,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onResetData,
   totalPlaces,
   totalCategories,
+  darkMode,
+  onToggleDarkMode,
 }) => {
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 transition-all">
@@ -69,6 +75,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Navigation & Admin Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={onToggleDarkMode}
+              className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+              title="Ganti Tema"
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            
             {/* Quick Reset Data Button */}
             
 

@@ -12,6 +12,7 @@ export interface Place {
   jamBuka?: string;
   fasilitas?: string[];
   rating?: number;
+  unggulan?: boolean;   // ← tambahan baru
 }
 
 export type ViewMode = 'split' | 'list' | 'map';

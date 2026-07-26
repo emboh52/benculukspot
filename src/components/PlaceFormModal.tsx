@@ -53,6 +53,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
   const [gambarUrl, setGambarUrl] = useState('');
   const [jamBuka, setJamBuka] = useState('08:00 - 21:00 WIB');
   const [fasilitasRaw, setFasilitasRaw] = useState('');
+ const [unggulan, setUnggulan] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
 
   useEffect(() => {
@@ -73,6 +74,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
       setGooglemaps(editPlace.googlemaps || '');
       setGambarUrl(editPlace.gambarUrl || '');
       setJamBuka(editPlace.jamBuka || '');
+      setUnggulan(editPlace.unggulan || false);
       setFasilitasRaw(editPlace.fasilitas ? editPlace.fasilitas.join(', ') : '');
     } else {
       // Reset form
@@ -86,6 +88,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
       setLongitude(114.2230);
       setGooglemaps('');
       setGambarUrl('');
+      setUnggulan(false);
       setJamBuka('08:00 - 21:00 WIB');
       setFasilitasRaw('Parkir, Air Mineral, Halal');
     }
@@ -119,6 +122,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
         latitude: Number(latitude),
         longitude: Number(longitude),
         googlemaps: finalMaps,
+        unggulan: unggulan,
         gambarUrl: gambarUrl.trim() || undefined,
         jamBuka: jamBuka.trim() || undefined,
         fasilitas: fasilitas.length > 0 ? fasilitas : undefined,
@@ -389,7 +393,21 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
               className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             />
           </div>
-
+{/* Tampilkan di Rekomendasi Tempat Pilihan */}
+          <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-200/80">
+            <input
+              type="checkbox"
+              id="unggulan"
+              checked={unggulan}
+              onChange={(e) => setUnggulan(e.target.checked)}
+              className="w-4 h-4 accent-emerald-600 rounded"
+            />
+            <label htmlFor="unggulan" className="text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              Tampilkan di "Rekomendasi Tempat Pilihan" (halaman depan)
+            </label>
+          </div>
+          
           {/* Submit Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button
