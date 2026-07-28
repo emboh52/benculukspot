@@ -1,28 +1,48 @@
 import { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
+import { collection, addDoc, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase'; // sesuaikan path ke config Firebase kamu
 
 interface ImagePickerProps {
   onSelect: (path: string) => void;
 }
 
+// Isi dua nilai ini setelah daftar di cloudinary.com
+// (Settings -> Upload -> Upload presets -> Add upload preset, Signing Mode: Unsigned)
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'GANTI_CLOUD_NAME';
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'GANTI_UPLOAD_PRESET';
+
+interface GalleryImage {
+  id: string;
+  url: string;
+}
+
 function ImagePicker({ onSelect }: ImagePickerProps) {
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<GalleryImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const loadImages = () => {
-    fetch('/images/manifest.json')
-      .then((res) => res.json())
-      .then(setImages);
-  };
-
+  // Ambil riwayat gambar yang pernah diupload, realtime dari Firestore
   useEffect(() => {
-    loadImages();
+    const q = query(collection(db, 'gallery'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((d) => ({
+        id: d.id,
+        url: d.data().url as string,
+      }));
+      setImages(data);
+    });
+    return () => unsub();
   }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (CLOUDINARY_CLOUD_NAME === 'GANTI_CLOUD_NAME') {
+      setMessage('Gagal: Cloudinary belum disetel. Isi VITE_CLOUDINARY_CLOUD_NAME & VITE_CLOUDINARY_UPLOAD_PRESET di file .env');
+      return;
+    }
 
     setUploading(true);
     setMessage('Mengompres gambar...');
@@ -34,27 +54,36 @@ function ImagePicker({ onSelect }: ImagePickerProps) {
         useWebWorker: true,
       });
 
-      const dataUrl = await imageCompression.getDataUrlFromFile(compressedFile);
+      setMessage('Mengupload ke Cloudinary...');
 
-      setMessage('Menyimpan ke folder public...');
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-      const filename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-
-      const res = await fetch('/api/upload-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename, dataUrl }),
-      });
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
 
       const result = await res.json();
 
       if (!res.ok) {
-        throw new Error(result.error || 'Upload gagal');
+        throw new Error(result.error?.message || 'Upload ke Cloudinary gagal');
       }
 
-      setMessage(`Berhasil! Ukuran akhir: ${result.sizeKB} KB`);
-      loadImages(); // refresh grid biar gambar baru langsung muncul
-      onSelect(result.path); // langsung pilih gambar yang baru diupload
+      const secureUrl: string = result.secure_url;
+
+      // Catat ke Firestore biar muncul di grid riwayat gambar
+      await addDoc(collection(db, 'gallery'), {
+        url: secureUrl,
+        createdAt: serverTimestamp(),
+      });
+
+      setMessage(`Berhasil! Ukuran akhir: ${Math.round(compressedFile.size / 1024)} KB`);
+      onSelect(secureUrl); // langsung pilih gambar yang baru diupload
     } catch (err) {
       setMessage(`Gagal: ${(err as Error).message}`);
     } finally {
@@ -77,12 +106,12 @@ function ImagePicker({ onSelect }: ImagePickerProps) {
       )}
 
       <div className="grid grid-cols-4 gap-2">
-        {images.map((file) => (
+        {images.map((img) => (
           <img
-            key={file}
-            src={`/images/${file}`}
-            onClick={() => onSelect(`/images/${file}`)}
-            className="cursor-pointer rounded hover:opacity-75"
+            key={img.id}
+            src={img.url}
+            onClick={() => onSelect(img.url)}
+            className="cursor-pointer rounded hover:opacity-75 aspect-square object-cover"
           />
         ))}
       </div>
