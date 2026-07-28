@@ -13,24 +13,28 @@ import {
   Sparkles,
   Sun,
   Moon,
+  FileEdit,
+  Newspaper,
 } from 'lucide-react';
 
 interface NavbarProps {
   admin: AdminUser;
-  activeTab: 'public' | 'login' | 'admin';
-  setActiveTab: (tab: 'public' | 'login' | 'admin') => void;
+  activeTab: 'public' | 'login' | 'admin' | 'posts' | 'blog';
+  setActiveTab: (tab: 'public' | 'login' | 'admin' | 'posts' | 'blog') => void;
+  onGoToBlog: () => void;
   onLogoutAdmin: () => void;
   onResetData: () => void;
   totalPlaces: number;
   totalCategories: number;
-  darkMode: boolean;           // ← tambahkan
-  onToggleDarkMode: () => void; // ← tambahkan
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   admin,
   activeTab,
   setActiveTab,
+  onGoToBlog,
   onLogoutAdmin,
   onResetData,
   totalPlaces,
@@ -82,9 +86,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            
-            {/* Quick Reset Data Button */}
-            
 
             {/* Tab Switching / Admin Login state */}
             {admin.isLoggedIn ? (
@@ -104,7 +105,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     />
                   )}
-                  <span className="relative z-10">Lihat Direktori</span>
+                  <span className="relative z-10"></span>
+                </button>
+
+                <button
+                  onClick={onGoToBlog}
+                  className={`relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ${
+                    activeTab === 'blog'
+                      ? 'text-emerald-800'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {activeTab === 'blog' && (
+                    <motion.div
+                      layoutId="activeTabBadge"
+                      className="absolute inset-0 bg-white rounded-lg shadow-xs"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Newspaper className="w-3.5 h-3.5 relative z-10" />
+                  <span className="relative z-10">Artikel</span>
                 </button>
 
                 <button
@@ -124,6 +144,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                   )}
                   <ShieldCheck className="w-3.5 h-3.5 relative z-10" />
                   <span className="relative z-10">Dashboard Admin</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('posts')}
+                  className={`relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ${
+                    activeTab === 'posts'
+                      ? 'text-white'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {activeTab === 'posts' && (
+                    <motion.div
+                      layoutId="activeTabBadge"
+                      className="absolute inset-0 bg-emerald-600 rounded-lg shadow-xs"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <FileEdit className="w-3.5 h-3.5 relative z-10" />
+                  <span className="relative z-10">Postingan</span>
                 </button>
 
                 <button
@@ -151,11 +190,35 @@ export const Navbar: React.FC<NavbarProps> = ({
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     />
                   )}
-                  <span className="relative z-10">Lihat Direktori</span>
+                  <span className="relative z-10"></span>
                 </button>
 
                 <button
-                  
+                  onClick={onGoToBlog}
+                  className={`relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ${
+                    activeTab === 'blog'
+                      ? 'text-emerald-800'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {activeTab === 'blog' && (
+                    <motion.div
+                      layoutId="activeTabBadge"
+                      className="absolute inset-0 bg-white rounded-lg shadow-xs"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Newspaper className="w-3.5 h-3.5 relative z-10" />
+                  <span className="relative z-10">Artikel</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('login')}
+                  className={`relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ${
+                    activeTab === 'login'
+                      ? 'text-white'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
                   {activeTab === 'login' && (
                     <motion.div

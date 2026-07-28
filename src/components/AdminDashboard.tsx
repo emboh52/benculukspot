@@ -13,7 +13,7 @@ import {
   ExternalLink,
   MapPin,
   Phone,
-  ShieldCheck,
+  
   CheckCircle2,
   AlertTriangle,
   Store,
@@ -91,7 +91,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold mb-2">
-              <ShieldCheck className="w-3.5 h-3.5" />
+              
               <span>Panel Kontrol Admin</span>
             </div>
             <h2 className="text-2xl font-extrabold text-white tracking-tight">

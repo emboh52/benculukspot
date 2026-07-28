@@ -21,3 +21,21 @@ export interface AdminUser {
   email: string;
   isLoggedIn: boolean;
 }
+
+export interface PostSeo {
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string[];
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  coverImage: string;
+  status: 'draft' | 'published';
+  seo: PostSeo;
+  createdAt?: any;
+  updatedAt?: any;
+}

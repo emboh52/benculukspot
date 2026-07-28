@@ -2,16 +2,21 @@ import { db } from './firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Place, AdminUser } from './types';
+import { Place, AdminUser, Post } from './types';
 import { INITIAL_PLACES } from './data/initialPlaces';
 import { exportPlacesToCsv } from './utils/csv';
 import { Navbar } from './components/Navbar';
 import { PublicDirectory } from './components/PublicDirectory';
 import { AdminDashboard } from './components/AdminDashboard';
+import  PostEditor  from './components/PostEditor';
 import { AdminLoginPage } from './components/AdminLoginPage';
 import { PlaceFormModal } from './components/PlaceFormModal';
 import { PlaceDetailModal } from './components/PlaceDetailModal';
 import { MapPin, Heart, Shield, CheckCircle2 } from 'lucide-react';
+import PostList from './components/PostList';
+import AdminPostList from './components/AdminPostList';
+import PostDetail from './components/PostDetail';
+
 
 const LOCAL_STORAGE_KEY = 'benculuk_places_v1';
 const ADMIN_STORAGE_KEY = 'benculuk_admin_v1';
@@ -56,6 +61,23 @@ useEffect(() => {
   }
   return () => window.removeEventListener('hashchange', handleHashChange);
 }, []);
+
+// Baca URL /artikel/:slug saat pertama kali load atau saat back/forward browser
+useEffect(() => {
+  const syncFromUrl = () => {
+    const match = window.location.pathname.match(/^\/artikel\/([^/]+)\/?$/);
+    if (match) {
+      setActiveTab('blog');
+      setSelectedPostSlug(decodeURIComponent(match[1]));
+    } else if (window.location.pathname === '/blog') {
+      setActiveTab('blog');
+      setSelectedPostSlug(null);
+    }
+  };
+  syncFromUrl();
+  window.addEventListener('popstate', syncFromUrl);
+  return () => window.removeEventListener('popstate', syncFromUrl);
+}, []);
 const [darkMode, setDarkMode] = useState<boolean>(() => {
   return localStorage.getItem('benculuk_darkmode') === 'true';
 });
@@ -77,13 +99,16 @@ useEffect(() => {
   });
 
   // UI Navigation & Modals State
-  const [activeTab, setActiveTab] = useState<'public' | 'login' | 'admin'>('public');
+  const [activeTab, setActiveTab] = useState<'public' | 'login' | 'admin' | 'posts' | 'blog'>('public');
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null);
   const [detailModalPlace, setDetailModalPlace] = useState<Place | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showPostEditor, setShowPostEditor] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   
 
   // Save Places to LocalStorage
@@ -196,6 +221,25 @@ const handleDeletePlace = async (id: string) => {
     showToast('Gagal menghapus data dari database.');
   }
 };
+// dipanggil dari tombol "Artikel" di Navbar
+function goToBlog() {
+  console.log('goToBlog dipanggil, activeTab sebelumnya:', activeTab);
+  setSelectedPostSlug(null); // pastikan mulai dari daftar, bukan nyangkut di artikel lama
+  setActiveTab('blog');
+  window.history.pushState({}, '', '/blog');
+}
+
+// Dipanggil saat memilih artikel (dari list publik) — sinkronkan URL juga
+function handleSelectPost(slug: string) {
+  setSelectedPostSlug(slug);
+  window.history.pushState({}, '', `/artikel/${slug}`);
+}
+
+// Dipanggil saat kembali dari detail artikel ke daftar
+function handleBackFromPost() {
+  setSelectedPostSlug(null);
+  window.history.pushState({}, '', '/blog');
+}
 
   // CSV: Import Places
  const handleImportCsvPlaces = async (imported: Place[]) => {
@@ -272,6 +316,7 @@ const handleDeletePlace = async (id: string) => {
         admin={admin}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onGoToBlog={goToBlog}
         onLogoutAdmin={handleLogoutAdmin}
         onResetData={handleResetData}
         totalPlaces={places.length}
@@ -331,6 +376,47 @@ const handleDeletePlace = async (id: string) => {
                   onBackToPublic={() => setActiveTab('public')}
                 />
               ))}
+              {activeTab === 'posts' && (
+              admin.isLoggedIn ? (
+                showPostEditor ? (
+                  <PostEditor
+                    existingPost={editingPost}
+                    onDone={() => {
+                      setShowPostEditor(false);
+                      setEditingPost(null);
+                    }}
+                  />
+                ) : (
+                  <AdminPostList
+                    onCreateNew={() => {
+                      setEditingPost(null);
+                      setShowPostEditor(true);
+                    }}
+                    onEditPost={(post) => {
+                      setEditingPost(post);
+                      setShowPostEditor(true);
+                    }}
+                  />
+                )
+              ) : (
+                <AdminLoginPage
+                  onLoginSuccess={handleLoginSuccess}
+                  onBackToPublic={() => setActiveTab('public')}
+                />
+              )
+            )}
+            {activeTab === 'blog' && (
+              selectedPostSlug ? (
+                <PostDetail
+                  slug={selectedPostSlug}
+                  onBack={handleBackFromPost}
+                />
+              ) : (
+                <PostList
+                  onSelectPost={handleSelectPost}
+                />
+              )
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
