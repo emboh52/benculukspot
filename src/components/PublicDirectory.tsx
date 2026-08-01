@@ -72,7 +72,7 @@ const matchesCat =
       <div 
         className="rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden"
         style={{
-          backgroundImage: 'url(https://res.cloudinary.com/uj6flyyh/image/upload/v1785561108/Gemini_Generated_Image_y2c1z0y2c1z0y2c1_dasbv9.png)',
+          backgroundImage: 'url(https://res.cloudinary.com/uj6flyyh/image/upload/f_webp/v1785561108/Gemini_Generated_Image_y2c1z0y2c1z0y2c1_dasbv9.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           minHeight: '380px'
