@@ -69,23 +69,22 @@ const matchesCat =
   return (
     <div className="space-y-6 pb-12">
       {/* Hero Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-emerald-400/10 blur-3xl rounded-full" />
+      <div 
+        className="rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden"
+        style={{
+          backgroundImage: 'url(https://res.cloudinary.com/uj6flyyh/image/upload/v1785561108/Gemini_Generated_Image_y2c1z0y2c1z0y2c1_dasbv9.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          minHeight: '380px'
+        }}
+      >
+        {/* Dark overlay untuk text readability */}
 
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-200 border border-white/20 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Informasi Kuliner DiBenculuk & Sekitarnya</span>
-          </div>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight text-white">
-            Temukan Pusat Kuliner & Fasilitas Terbaik
-          </h2>
+<div className="relative z-10 max-w-2xl space-y-4 text-center flex flex-col ">
+              
 
-          <p className="text-xs sm:text-sm font-bold text-emerald-900 leading-relaxed">
-            Menjelajahi keindahan De Djawatan Forest - Banyuwangi rasanya kurang lengkap tanpa menikmati sajian kuliner khas dan menemukan tempat beristirahat yang nyaman di sekitarnya. 
-            Berikut adalah kurasi tempat makan lezat dan akomodasi pilihan yang siap menyempurnakan petualanganmu
-          </p>
+         
 
           <div className="pt-2 flex flex-wrap items-center gap-2">
             <button
@@ -102,6 +101,11 @@ const matchesCat =
           </div>
         </div>
       </div>
+
+       <p className="text-sm sm:text-sm font-bold text-Black leading-relaxed flex flex-col justify-center items-center ">
+            Jelajahi keindahan De Djawatan Forest - Banyuwangi rasanya kurang lengkap tanpa menikmati sajian kuliner khas dan menemukan tempat beristirahat yang nyaman di sekitarnya. 
+           
+          </p>
 <FeaturedSpots places={places} onSelectPlace={onSelectPlace} />
 
     {/* Search & Filter Controls */}
