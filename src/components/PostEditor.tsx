@@ -4,6 +4,11 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
+import CodeBlock from '@tiptap/extension-code-block';
+import Blockquote from '@tiptap/extension-blockquote';
+import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import slugify from 'slugify';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase'; // sesuaikan path ke config Firebase kamu
@@ -38,10 +43,29 @@ export default function PostEditor({ existingPost = null, onDone }: PostEditorPr
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Image,
-      Link,
-      Placeholder.configure({ placeholder: 'Tulis isi artikel di sini...' }),
+      StarterKit.configure({
+        codeBlock: false, // pakai extension CodeBlock terpisah untuk lebih baik
+      }),
+      Image.configure({
+        inline: true,
+        allowBase64: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+      }),
+      Placeholder.configure({ 
+        placeholder: 'Tulis isi artikel di sini...',
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Underline,
+      CodeBlock.configure({
+        languageClassPrefix: 'language-',
+      }),
+      Blockquote,
+      HorizontalRule,
     ],
     content: existingPost?.content || '',
   });
@@ -78,18 +102,36 @@ export default function PostEditor({ existingPost = null, onDone }: PostEditorPr
       alert('Judul belum diisi');
       return;
     }
+
+    const rawContent = editor?.getHTML() || '';
+    if (!rawContent.trim()) {
+      alert('Isi artikel belum ditulis');
+      return;
+    }
+
     setSaving(true);
     try {
+      // Clean up HTML: remove empty tags, normalize spacing
+      const cleanHTML = rawContent
+        .replace(/<p><br><\/p>/g, '') // remove empty paragraphs
+        .replace(/<p>\s*<\/p>/g, '') // remove whitespace-only paragraphs
+        .replace(/&nbsp;/g, ' ') // normalize spaces
+        .replace(/\s+/g, ' ') // collapse multiple spaces (per line)
+        .trim();
+
       const payload = {
-        title,
+        title: title.trim(),
         slug: slugify(title, { lower: true, strict: true }),
-        content: editor?.getHTML() || '',
+        content: cleanHTML,
         coverImage,
         status: publishNow ? 'published' : 'draft',
         seo: {
-          metaTitle: seo.metaTitle || title,
-          metaDescription: seo.metaDescription,
-          keywords: seo.keywords.split(',').map(k => k.trim()).filter(Boolean),
+          metaTitle: (seo.metaTitle || title).trim(),
+          metaDescription: seo.metaDescription.trim(),
+          keywords: seo.keywords
+            .split(',')
+            .map(k => k.trim())
+            .filter(Boolean),
         },
         updatedAt: serverTimestamp(),
       };
@@ -106,11 +148,11 @@ export default function PostEditor({ existingPost = null, onDone }: PostEditorPr
       }
 
       setStatus(publishNow ? 'published' : 'draft');
-      alert(publishNow ? 'Artikel diterbitkan!' : 'Draft tersimpan!');
+      alert(publishNow ? '✅ Artikel diterbitkan!' : '✅ Draft tersimpan!');
       onDone?.();
     } catch (err) {
-      console.error(err);
-      alert('Gagal menyimpan, cek console untuk detail error');
+      console.error('Save error:', err);
+      alert(`❌ Gagal menyimpan: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -162,17 +204,142 @@ export default function PostEditor({ existingPost = null, onDone }: PostEditorPr
 
         {/* Toolbar Tiptap */}
         {editor && (
-          <div className="flex gap-2 mb-2 border-b pb-2">
-            <button onClick={() => editor.chain().focus().toggleBold().run()} className="px-2 py-1 border rounded font-bold">B</button>
-            <button onClick={() => editor.chain().focus().toggleItalic().run()} className="px-2 py-1 border rounded italic">I</button>
-            <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className="px-2 py-1 border rounded">H2</button>
-            <button onClick={() => editor.chain().focus().toggleBulletList().run()} className="px-2 py-1 border rounded">• List</button>
-            <button onClick={() => setShowPicker('inline')} className="px-2 py-1 border rounded">🖼 Gambar</button>
+          <div className="space-y-2 mb-2">
+            {/* Row 1: Text styling */}
+            <div className="flex gap-1 border-b pb-2">
+              <button 
+                onClick={() => editor.chain().focus().toggleBold().run()} 
+                className={`px-2 py-1 border rounded font-bold text-sm ${editor.isActive('bold') ? 'bg-blue-100' : ''}`}
+                title="Bold"
+              >B</button>
+              <button 
+                onClick={() => editor.chain().focus().toggleItalic().run()} 
+                className={`px-2 py-1 border rounded italic text-sm ${editor.isActive('italic') ? 'bg-blue-100' : ''}`}
+                title="Italic"
+              >I</button>
+              <button 
+                onClick={() => editor.chain().focus().toggleUnderline().run()} 
+                className={`px-2 py-1 border rounded underline text-sm ${editor.isActive('underline') ? 'bg-blue-100' : ''}`}
+                title="Underline"
+              >U</button>
+              <div className="border-l mx-1"></div>
+              <button 
+                onClick={() => editor.chain().focus().toggleStrike().run()} 
+                className={`px-2 py-1 border rounded line-through text-sm ${editor.isActive('strike') ? 'bg-blue-100' : ''}`}
+                title="Strikethrough"
+              >S</button>
+              <button 
+                onClick={() => editor.chain().focus().toggleCode().run()} 
+                className={`px-2 py-1 border rounded font-mono text-sm ${editor.isActive('code') ? 'bg-blue-100' : ''}`}
+                title="Inline Code"
+              >&lt;/&gt;</button>
+            </div>
+
+            {/* Row 2: Headings */}
+            <div className="flex gap-1 border-b pb-2">
+              <button 
+                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} 
+                className={`px-2 py-1 border rounded font-bold text-sm ${editor.isActive('heading', { level: 1 }) ? 'bg-blue-100' : ''}`}
+                title="Heading 1"
+              >H1</button>
+              <button 
+                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
+                className={`px-2 py-1 border rounded font-bold text-sm ${editor.isActive('heading', { level: 2 }) ? 'bg-blue-100' : ''}`}
+                title="Heading 2"
+              >H2</button>
+              <button 
+                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} 
+                className={`px-2 py-1 border rounded font-bold text-sm ${editor.isActive('heading', { level: 3 }) ? 'bg-blue-100' : ''}`}
+                title="Heading 3"
+              >H3</button>
+              <div className="border-l mx-1"></div>
+              <button 
+                onClick={() => editor.chain().focus().toggleBlockquote().run()} 
+                className={`px-2 py-1 border rounded text-sm ${editor.isActive('blockquote') ? 'bg-blue-100' : ''}`}
+                title="Blockquote"
+              >&quot;</button>
+            </div>
+
+            {/* Row 3: Lists & alignment */}
+            <div className="flex gap-1 border-b pb-2">
+              <button 
+                onClick={() => editor.chain().focus().toggleBulletList().run()} 
+                className={`px-2 py-1 border rounded text-sm ${editor.isActive('bulletList') ? 'bg-blue-100' : ''}`}
+                title="Bullet List"
+              >• List</button>
+              <button 
+                onClick={() => editor.chain().focus().toggleOrderedList().run()} 
+                className={`px-2 py-1 border rounded text-sm ${editor.isActive('orderedList') ? 'bg-blue-100' : ''}`}
+                title="Numbered List"
+              >1. List</button>
+              <div className="border-l mx-1"></div>
+              <button 
+                onClick={() => editor.chain().focus().setTextAlign('left').run()} 
+                className={`px-2 py-1 border rounded text-sm ${editor.isActive({ textAlign: 'left' }) ? 'bg-blue-100' : ''}`}
+                title="Align Left"
+              >←</button>
+              <button 
+                onClick={() => editor.chain().focus().setTextAlign('center').run()} 
+                className={`px-2 py-1 border rounded text-sm ${editor.isActive({ textAlign: 'center' }) ? 'bg-blue-100' : ''}`}
+                title="Align Center"
+              >↔</button>
+              <button 
+                onClick={() => editor.chain().focus().setTextAlign('right').run()} 
+                className={`px-2 py-1 border rounded text-sm ${editor.isActive({ textAlign: 'right' }) ? 'bg-blue-100' : ''}`}
+                title="Align Right"
+              >→</button>
+            </div>
+
+            {/* Row 4: Media & special */}
+            <div className="flex gap-1">
+              <button onClick={() => setShowPicker('inline')} className="px-2 py-1 border rounded text-sm hover:bg-gray-100">🖼 Gambar</button>
+              <button 
+                onClick={() => editor.chain().focus().insertContent('<hr />').run()} 
+                className="px-2 py-1 border rounded text-sm hover:bg-gray-100"
+                title="Horizontal Line"
+              >―</button>
+              <button 
+                onClick={() => editor.chain().focus().toggleCodeBlock().run()} 
+                className={`px-2 py-1 border rounded text-sm ${editor.isActive('codeBlock') ? 'bg-blue-100' : ''}`}
+                title="Code Block"
+              >&lt;&gt;</button>
+              <div className="border-l mx-1"></div>
+              <button 
+                onClick={() => editor.chain().focus().undo().run()} 
+                className="px-2 py-1 border rounded text-sm hover:bg-gray-100"
+                title="Undo"
+              >↶</button>
+              <button 
+                onClick={() => editor.chain().focus().redo().run()} 
+                className="px-2 py-1 border rounded text-sm hover:bg-gray-100"
+                title="Redo"
+              >↷</button>
+            </div>
           </div>
         )}
 
         {/* Area tulis */}
-        <EditorContent editor={editor} className="prose max-w-none min-h-[300px] border rounded p-4" />
+        <div className="border rounded bg-white">
+          <EditorContent 
+            editor={editor} 
+            className="prose prose-sm max-w-none min-h-[400px] p-4 focus-within:outline-none
+                       prose-p:my-2 prose-p:leading-relaxed
+                       prose-h1:my-3 prose-h1:text-2xl
+                       prose-h2:my-2 prose-h2:text-xl
+                       prose-h3:my-2 prose-h3:text-lg
+                       prose-strong:font-bold
+                       prose-em:italic
+                       prose-ul:my-2 prose-ul:ml-4
+                       prose-ol:my-2 prose-ol:ml-4
+                       prose-li:my-1
+                       prose-img:rounded prose-img:max-w-full
+                       prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic
+                       prose-code:bg-gray-100 prose-code:rounded prose-code:px-1
+                       prose-pre:bg-gray-100 prose-pre:rounded prose-pre:p-3 prose-pre:overflow-x-auto
+                       prose-a:text-blue-600 prose-a:underline
+                       prose-hr:my-4"
+          />
+        </div>
 
         {/* Modal Image Picker */}
         {showPicker && (

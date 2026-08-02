@@ -16,8 +16,13 @@
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
+    "@tiptap/extension-blockquote": "^3.29.2",
+    "@tiptap/extension-code-block": "^3.29.2",
+    "@tiptap/extension-horizontal-rule": "^3.29.2",
     "@tiptap/extension-image": "^3.29.0",
     "@tiptap/extension-placeholder": "^3.29.0",
+    "@tiptap/extension-text-align": "^3.29.2",
+    "@tiptap/extension-underline": "^3.29.2",
     "@tiptap/pm": "^3.29.0",
     "@tiptap/react": "^3.29.0",
     "@tiptap/starter-kit": "^3.29.0",
