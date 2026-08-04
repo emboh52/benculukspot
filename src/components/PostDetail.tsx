@@ -62,6 +62,12 @@ export default function PostDetail({ slug, onBack }: PostDetailProps) {
     const articleUrl = `https://benculukspot.vercel.app/artikel/${post.slug}`;
     const siteUrl = 'https://benculukspot.vercel.app';
     
+
+    
+const ogImage = post.coverImage 
+  ? post.coverImage 
+  : 'https://benculukspot.vercel.app/images/Screenshot%20(15).png';
+
     // Transform image untuk Pinterest
     const transformedImage = (() => {
       if (!post.coverImage) return `${siteUrl}/images/og-default.png`;

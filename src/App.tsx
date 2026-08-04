@@ -16,10 +16,12 @@ import { MapPin, Heart, Shield, CheckCircle2 } from 'lucide-react';
 import PostList from './components/PostList';
 import AdminPostList from './components/AdminPostList';
 import PostDetail from './components/PostDetail';
+import { HelmetProvider } from 'react-helmet-async';
 
 
 const LOCAL_STORAGE_KEY = 'benculuk_places_v1';
 const ADMIN_STORAGE_KEY = 'benculuk_admin_v1';
+
 
 export default function App() {
   // Places State
@@ -295,8 +297,10 @@ function handleBackFromPost() {
   };
 
   return (
-<div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] transition-colors">      <AnimatePresence>
-        {toastMessage && (
+    <HelmetProvider>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] transition-colors">
+        <AnimatePresence>
+          {toastMessage && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -307,12 +311,12 @@ function handleBackFromPost() {
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>{toastMessage}</span>
           </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
 
-      {/* Navbar */}
+        {/* Navbar */}
 
-      <Navbar
+        <Navbar
         admin={admin}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -451,6 +455,7 @@ function handleBackFromPost() {
         onClose={() => setDetailModalPlace(null)}
         userLocation={userLocation}
       />
-    </div>
+      </div>
+    </HelmetProvider>
   );
 }
