@@ -66,7 +66,7 @@ export default function PostDetail({ slug, onBack }: PostDetailProps) {
     
 const ogImage = post.coverImage 
   ? post.coverImage 
-  : 'https://benculukspot.vercel.app/images/Screenshot%20(15).png';
+  : 'https://res.cloudinary.com/uj6flyyh/image/upload/v1785840488/Screenshot_18_xnyupy.png';
 
     // Transform image untuk Pinterest
     const transformedImage = (() => {
