@@ -40,6 +40,7 @@
     "papaparse": "^5.5.4",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.18.1",
     "slugify": "^1.6.9",
     "vite": "^6.2.3"
