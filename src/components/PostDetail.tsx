@@ -61,6 +61,22 @@ export default function PostDetail({ slug, onBack }: PostDetailProps) {
     
     const articleUrl = `https://benculukspot.vercel.app/artikel/${post.slug}`;
     const siteUrl = 'https://benculukspot.vercel.app';
+    
+    // Transform image untuk Pinterest
+    const transformedImage = (() => {
+      if (!post.coverImage) return `${siteUrl}/images/og-default.png`;
+      
+      if (post.coverImage.includes('cloudinary.com')) {
+        const cloudinaryMatch = post.coverImage.match(/\/upload\/(.*?)(\.jpg|\.png|\.webp)/);
+        if (cloudinaryMatch) {
+          const publicId = cloudinaryMatch[1];
+          const format = cloudinaryMatch[2];
+          return `https://res.cloudinary.com/uj6flyyh/image/upload/w_1000,h_1500,c_fill,q_auto/${publicId}${format}`;
+        }
+      }
+      
+      return post.coverImage;
+    })();
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
@@ -69,7 +85,7 @@ export default function PostDetail({ slug, onBack }: PostDetailProps) {
       '@type': 'BlogPosting',
       headline: post.title,
       description: post.seo?.metaDescription || excerpt,
-      image: post.coverImage || `${siteUrl}/logo.png`,
+      image: transformedImage,
       datePublished: post.createdAt?.toDate?.().toISOString() || new Date().toISOString(),
       dateModified: post.updatedAt?.toDate?.().toISOString() || new Date().toISOString(),
       author: {
@@ -154,10 +170,30 @@ export default function PostDetail({ slug, onBack }: PostDetailProps) {
     return textOnly.length > limit ? textOnly.substring(0, limit) + '...' : textOnly;
   };
 
+  // Transform image untuk Pinterest (1000x1500px portrait ratio)
+  const transformImageForPinterest = (imageUrl: string | undefined): string => {
+    if (!imageUrl) return 'https://benculukspot.vercel.app/images/og-default.png';
+
+    // Kalau Cloudinary — add transformation params
+    if (imageUrl.includes('cloudinary.com')) {
+      // Extract public_id dari Cloudinary URL
+      const cloudinaryMatch = imageUrl.match(/\/upload\/(.*?)(\.jpg|\.png|\.webp)/);
+      if (cloudinaryMatch) {
+        const publicId = cloudinaryMatch[1];
+        const format = cloudinaryMatch[2];
+        return `https://res.cloudinary.com/uj6flyyh/image/upload/w_1000,h_1500,c_fill,q_auto/${publicId}${format}`;
+      }
+    }
+
+    // Kalau image service lain, return as-is (Pinterest akan handle)
+    return imageUrl;
+  };
+
   const readTime = estimateReadTime(post.content);
   const excerpt = extractExcerpt(post.content);
   const articleUrl = `https://benculukspot.vercel.app/artikel/${post.slug}`;
   const siteUrl = 'https://benculukspot.vercel.app';
+  const ogImage = transformImageForPinterest(post.coverImage);
 
   return (
     <>
@@ -174,11 +210,9 @@ export default function PostDetail({ slug, onBack }: PostDetailProps) {
         <meta property="og:url" content={articleUrl} />
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.seo?.metaDescription || excerpt} />
-        {post.coverImage && (
-          <meta property="og:image" content={post.coverImage} />
-        )}
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1000" />
+        <meta property="og:image:height" content="1500" />
 
         {/* Article Meta Tags */}
         {post.createdAt && (
@@ -192,9 +226,7 @@ export default function PostDetail({ slug, onBack }: PostDetailProps) {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.seo?.metaDescription || excerpt} />
-        {post.coverImage && (
-          <meta name="twitter:image" content={post.coverImage} />
-        )}
+        <meta name="twitter:image" content={ogImage} />
 
         <link rel="canonical" href={articleUrl} />
       </Helmet>
